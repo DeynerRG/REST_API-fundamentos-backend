@@ -1,18 +1,41 @@
-import { getUsuario, putUsuario, postUsuario, deleteUsuario } from "../controllers/usuariosController.js";
+import { check, checkSchema } from "express-validator";
+import { getUsuarios, putUsuario, postUsuario, deleteUsuario } from "../controllers/usuariosController.js";
 import { Router } from "express";
+import { validarCampos } from "../middlewares/index.js";
+import { existeEmail, validarRol, existeUsuarioPorId } from "../helpers/index.js";
+
 
 const userRouter = Router();
 
-userRouter.get('/',  getUsuario );
+userRouter.get('/',  getUsuarios );
 
 // definir una ruta dinamica que toma cuyo nombre es el definido
-userRouter.put('/:id', putUsuario);
+userRouter.put('/:id', [
+    check("id", "No es un id valido").isMongoId(),
+    check("id").custom( (id)=>existeUsuarioPorId(id) ),
+    check("rol").custom( (rol)=> validarRol(rol) ),
+    validarCampos
+
+] , putUsuario);
+
+// Se va a ejecutar varios middlewares por lo tanto se agrega a un arreglo
+userRouter.post('/', [
+    check("correo", "el correo no es valido").isEmail(),
+    check("nombre", "el nombre es obligatorio").not().isEmpty(),
+    check("password", "el password es obligatorio y más de letras").isLength({ min: 6}),
+    // Valida si el correo ya existe
+    check("correo").custom( ( correo )=> existeEmail(correo) ),
+    // Valida si el rol existe en la base de datos
+    check("rol").custom( ( rol )=> validarRol(rol) ),
+    validarCampos
+] , postUsuario);
 
 
-userRouter.post('/', postUsuario);
-
-
-userRouter.delete('/', deleteUsuario);
+userRouter.delete('/:id',[
+    check("id", "No es un id valido").isMongoId(),
+    check("id").custom( (id)=>existeUsuarioPorId(id) ),
+    validarCampos
+], deleteUsuario);
 
 
 export default userRouter;
