@@ -22,7 +22,7 @@ const validarPassword = (passwordLogin, passwordDb)=>{
 };
 
 
-const validarRol = async( rol = '' ) => {
+const validarRol = async( rol = 'USER_ROL' ) => {
     
     const existeRol = await Role.findOne( { rol } );
     if( !existeRol ){
