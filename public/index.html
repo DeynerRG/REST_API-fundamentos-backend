@@ -3,11 +3,64 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Acceso denegado</title>
+    <title>Google Sign-in</title>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     
-    <h1>Acceso denegado</h1>
+    <h1>Google Sing-in</h1>
+    
+    <div class="container">
+        <div 
+            id="g_id_onload"
+            data-client_id="890529905858-3g10bf4a9okg2hr0vsgdpr63or22kbk2.apps.googleusercontent.com"
+            data-login_uri="https://your.domain/your_login_endpoint"
+            data-auto_prompt="false"
+            data-callback="handleCredentialResponse">
+            
+        </div>
+        <div class="g_id_signin"
+            data-type="standard"
+            data-size="large"
+            data-theme="outline"
+            data-text="sign_in_with"
+            data-shape="rectangular"
+            data-logo_alignment="left">
+        </div>
+        <button id="google_signout">Salir</button>
 
+    </div>
+
+    <script src="https://accounts.google.com/gsi/client" async></script>
+    <script>
+        async function handleCredentialResponse(response) {
+           
+            // Google token: id_token
+            console.log('id_token', response.credential)
+
+            const body = { id_token: response.credential };
+            
+            const resp = await fetch('http://localhost:8080/api/auth/google',{
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(body)
+            })
+            const data = await resp.json(resp);
+            localStorage.setItem('email', data.usuario.correo)
+            console.log(data);  
+        };
+
+        const button = document.querySelector('#google_signout');
+        button.onclick = ()=>{
+            google.accounts.id.disableAutoSelect();
+            google.accounts.id.revoke(localStorage.getItem('email') || '', (done)=>{
+                localStorage.clear();
+                location.reload();
+            });
+        };
+      </script>
+      
 </body>
 </html>

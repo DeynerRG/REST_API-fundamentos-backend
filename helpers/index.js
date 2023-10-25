@@ -2,6 +2,10 @@ import bycriptjs from 'bcryptjs';
 import Role from "../models/rol.js";
 import { Usuario } from '../models/usuario.js';
 import jwt from 'jsonwebtoken';
+import { OAuth2Client } from 'google-auth-library';
+
+
+const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 const hashPassword = ( password )=>{
 
@@ -66,6 +70,21 @@ const generarJWT = ( uid = '' )=>{
 };
 
 
+const googleVerify = async(token= '')=>{
+    const ticket = await client.verifyIdToken({
+        idToken: token,
+        audience: process.env.GOOGLE_CLIENT_ID
+    });
+    const payload = ticket.getPayload();
+    const { name, picture, email } = payload;
+    return {
+        nombre: name, 
+        img: picture, 
+        correo: email, 
+    };
+
+};
+
 
 export {
     hashPassword,
@@ -73,5 +92,6 @@ export {
     existeEmail,
     existeUsuarioPorId,
     validarPassword,
-    generarJWT
+    generarJWT,
+    googleVerify
 }

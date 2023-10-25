@@ -7,6 +7,11 @@ const UsuarioSchema = Schema({
         type: String,
         required:[ true, 'El nombre es obligatorio' ],
     },
+    img:{
+        type: String,
+        required: false,
+        default: 'no-img'
+    },
     correo: {
         type: String,
         required:[ true, 'El correo es obligatorio' ],

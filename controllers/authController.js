@@ -1,5 +1,7 @@
 import { validarPassword, generarJWT } from "../helpers/index.js";
 import { Usuario } from "../models/usuario.js";
+import { googleVerify  } from "../helpers/index.js";
+
 
 const login = async(req, res)=>{
     
@@ -39,9 +41,53 @@ const login = async(req, res)=>{
     };
 };
 
+const googleSignIn = async(req, res)=>{
+    const { id_token } = req.body;
+    try {
+        const googleUser = await googleVerify(id_token);
+        const { nombre, correo, img } = googleUser;
+
+        let usuario = await Usuario.findOne({correo});
+        if(!usuario){
+            const data = {
+                nombre,
+                correo,
+                password: ':P',
+                img,
+                google: true,
+                rol:'USER_ROL'
+            }   
+            
+            usuario = new Usuario(data);
+            await usuario.save();   
+        };
+
+        if(!usuario.estado){
+            return res.status(401).json({
+                msg: 'Comuniquese con el administrador - usuario no autorizado'
+            })
+        };
+
+        const token = await generarJWT(usuario.id);
+
+        res.json({
+            msg:'¡Todo bien! sign in',
+            usuario,
+            token
+        })
 
 
+    } catch (error) {
+        console.log(error);
+        res.status(400).json({
+            msg:'El token no se pudo verificar',
+            ok: false
+        })
+    }
+    
+};
 
 export {
-    login
+    login,
+    googleSignIn
 }
