@@ -1,7 +1,7 @@
 import { validationResult } from "express-validator";
 import jwt from 'jsonwebtoken'
 import { Usuario } from "../models/usuario.js";
-
+import Categoria from "../models/categoria.js";
 
 const validarCampos = ( req, res, next )=>{
    
@@ -107,11 +107,47 @@ const tieneRole = (...roles)=>{
     }
 };
 
+const existeCategoria = async( req, res, next )=>{
+
+    let { categoria='' } = req.body;
+
+    
+    // si no se proporciona una categoria
+    if(categoria === ''){
+        return res.json({
+            msg: 'la categoria es obligatoria'
+        })
+    };
+
+    
+    try {
+    
+        categoria = categoria.toUpperCase();
+        const existeCategoria = await Categoria.findOne({ nombre: categoria, estado: true });
+        if(!existeCategoria){
+            return res.status(401).json({
+                msg: 'la categoria no existe'
+            })
+        }
+
+        req.categoria = existeCategoria;
+    
+    } catch (error) {
+        return res.status(500).json({
+            msg: 'error en el servidor'
+        })
+    }
+
+
+    next();
+};
+
 
 
 export {
     validarCampos,
     validarJWT,
     esAdminRole,
-    tieneRole
+    tieneRole,
+    existeCategoria
 };

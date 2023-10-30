@@ -38,7 +38,7 @@ userRouter.delete('/:id',[
     // esAdminRole,
     tieneRole('ADMIN_ROL', 'VENTAS_ROL'),
     check("id", "No es un id valido").isMongoId(),
-    check("id").custom( (id)=>existeUsuarioPorId(id) ),
+    check("id").custom( (id)=> existeUsuarioPorId(id) ),
     validarCampos,
 ], deleteUsuario);
 

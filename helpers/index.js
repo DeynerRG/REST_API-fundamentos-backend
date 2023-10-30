@@ -3,6 +3,9 @@ import Role from "../models/rol.js";
 import { Usuario } from '../models/usuario.js';
 import jwt from 'jsonwebtoken';
 import { OAuth2Client } from 'google-auth-library';
+import Categoria from '../models/categoria.js';
+import mongoose from 'mongoose';
+import Producto from '../models/producto.js';
 
 
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
@@ -51,6 +54,22 @@ const existeUsuarioPorId = async( id )=>{
 };
 
 
+
+const existeCategoriaPorId = async(id)=>{
+
+    
+    const existeCategoria = await Categoria.findById(id).populate('usuario');
+    if(!existeCategoria){
+        throw new Error(`No se encontro una categoria con el id ${id}`);
+    }
+    if(!existeCategoria.estado){
+        throw new Error(`No se encontro una categoria con el id ${id} o ha sido eliminada`);
+    }
+    
+};
+
+
+
 const generarJWT = ( uid = '' )=>{
 
     return new Promise( ( resolve, reject )=>{
@@ -86,6 +105,22 @@ const googleVerify = async(token= '')=>{
 };
 
 
+const existeProducto = async(nombre='')=>{
+    const producto = await Producto.findOne({ nombre });
+    if( producto ){
+        throw new Error(`Ya existe el producto`)
+    }
+};
+
+
+const existeProductoPorId = async(id)=>{
+    const producto = await Producto.findById(id);
+    if( !producto ){
+        throw new Error(`el id no existe`)
+    }
+}
+
+
 export {
     hashPassword,
     validarRol,
@@ -93,5 +128,8 @@ export {
     existeUsuarioPorId,
     validarPassword,
     generarJWT,
-    googleVerify
+    googleVerify,
+    existeCategoriaPorId,
+    existeProducto,
+    existeProductoPorId,
 }
